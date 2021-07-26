@@ -75,14 +75,16 @@ var Main = (function (_super) {
     __extends(Main, _super);
     function Main() {
         var _this = _super.call(this) || this;
+        _this.fnc = new Fnc();
+        _this.store = new Store();
         _this.addEventListener(egret.Event.ADDED_TO_STAGE, _this.onAddToStage, _this);
         return _this;
     }
     Main.prototype.onAddToStage = function (event) {
+        console.log('aaaaa');
         egret.lifecycle.addLifecycleListener(function (context) {
             // custom lifecycle plugin
-            context.onUpdate = function () {
-            };
+            context.onUpdate = function () { };
         });
         egret.lifecycle.onPause = function () {
             egret.ticker.pause();
@@ -103,7 +105,7 @@ var Main = (function (_super) {
                     case 1:
                         _a.sent();
                         this.createGameScene();
-                        return [4 /*yield*/, RES.getResAsync("description_json")];
+                        return [4 /*yield*/, RES.getResAsync('description_json')];
                     case 2:
                         result = _a.sent();
                         this.startAnimation(result);
@@ -128,16 +130,17 @@ var Main = (function (_super) {
                         _a.trys.push([0, 3, , 4]);
                         loadingView = new LoadingUI();
                         this.stage.addChild(loadingView);
-                        return [4 /*yield*/, RES.loadConfig("resource/default.res.json", "resource/")];
+                        return [4 /*yield*/, RES.loadConfig('resource/default.res.json', 'resource/')];
                     case 1:
                         _a.sent();
-                        return [4 /*yield*/, RES.loadGroup("preload", 0, loadingView)];
+                        return [4 /*yield*/, RES.loadGroup('preload', 0, loadingView)];
                     case 2:
                         _a.sent();
                         this.stage.removeChild(loadingView);
                         return [3 /*break*/, 4];
                     case 3:
                         e_1 = _a.sent();
+                        console.log('11');
                         console.error(e_1);
                         return [3 /*break*/, 4];
                     case 4: return [2 /*return*/];
@@ -150,86 +153,70 @@ var Main = (function (_super) {
      * Create a game scene
      */
     Main.prototype.createGameScene = function () {
-        var sky = this.createBitmapByName("bg_jpg");
+        var _this = this;
+        this.dispatcher = new CustomDispatcher();
+        // let store = new Store()
+        // this.y = 0
+        this.x = 0;
+        this.y = 0;
+        var sky = this.fnc.createBitmapByName('sky');
         this.addChild(sky);
+        var bg = new Bg();
+        // bg.y =
+        this.addChild(bg);
+        var bird = new Bird(this.dispatcher);
+        this.addChild(bird);
+        console.log('cmnnnn');
+        sky.touchEnabled = true;
+        sky.addEventListener(egret.TouchEvent.TOUCH_TAP, function () {
+            _this.store.start();
+            _this.dispatcher.birdLeap();
+        }, this);
+        // bg.init.call(this)
+        // const cloud = this.fnc.createBitmapByName('cloud')
+        // this.addChild(cloud)
+        // this.setChildIndex(sky, 9)
+        /*
+                startTick（停止对应stopTick）全局函数将以 60 帧速率回调函数。
+                
+                如果是使用 egret.Timer()来做实时监控的，结果发现delay 参数不能低于16.6毫秒的
+        */
+        // this.addEventListener(egret.TouchEvent.TOUCH_TAP, bird.leap, this)
+        egret.startTick(function () {
+            bird.move(_this.store);
+            bg.move(_this.store, bird.bird);
+            return false;
+        }, this);
         var stageW = this.stage.stageWidth;
         var stageH = this.stage.stageHeight;
         sky.width = stageW;
         sky.height = stageH;
-        var topMask = new egret.Shape();
-        topMask.graphics.beginFill(0x000000, 0.5);
-        topMask.graphics.drawRect(0, 0, stageW, 172);
-        topMask.graphics.endFill();
-        topMask.y = 33;
-        this.addChild(topMask);
-        var icon = this.createBitmapByName("egret_icon_png");
-        this.addChild(icon);
-        icon.x = 26;
-        icon.y = 33;
-        var line = new egret.Shape();
-        line.graphics.lineStyle(2, 0xffffff);
-        line.graphics.moveTo(0, 0);
-        line.graphics.lineTo(0, 117);
-        line.graphics.endFill();
-        line.x = 172;
-        line.y = 61;
-        this.addChild(line);
-        var colorLabel = new egret.TextField();
-        colorLabel.textColor = 0xffffff;
-        colorLabel.width = stageW - 172;
-        colorLabel.textAlign = "center";
-        colorLabel.text = "Hello Egret";
-        colorLabel.size = 24;
-        colorLabel.x = 172;
-        colorLabel.y = 80;
-        this.addChild(colorLabel);
-        var textfield = new egret.TextField();
-        this.addChild(textfield);
-        textfield.alpha = 0;
-        textfield.width = stageW - 172;
-        textfield.textAlign = egret.HorizontalAlign.CENTER;
-        textfield.size = 24;
-        textfield.textColor = 0xffffff;
-        textfield.x = 172;
-        textfield.y = 135;
-        this.textfield = textfield;
-    };
-    /**
-     * 根据name关键字创建一个Bitmap对象。name属性请参考resources/resource.json配置文件的内容。
-     * Create a Bitmap object according to name keyword.As for the property of name please refer to the configuration file of resources/resource.json.
-     */
-    Main.prototype.createBitmapByName = function (name) {
-        var result = new egret.Bitmap();
-        var texture = RES.getRes(name);
-        result.texture = texture;
-        return result;
     };
     /**
      * 描述文件加载成功，开始播放动画
      * Description file loading is successful, start to play the animation
      */
     Main.prototype.startAnimation = function (result) {
-        var _this = this;
-        var parser = new egret.HtmlTextParser();
-        var textflowArr = result.map(function (text) { return parser.parse(text); });
-        var textfield = this.textfield;
-        var count = -1;
-        var change = function () {
-            count++;
-            if (count >= textflowArr.length) {
-                count = 0;
-            }
-            var textFlow = textflowArr[count];
-            // 切换描述内容
-            // Switch to described content
-            textfield.textFlow = textFlow;
-            var tw = egret.Tween.get(textfield);
-            tw.to({ "alpha": 1 }, 200);
-            tw.wait(2000);
-            tw.to({ "alpha": 0 }, 200);
-            tw.call(change, _this);
-        };
-        change();
+        // let parser = new egret.HtmlTextParser()
+        // let textflowArr = result.map(text => parser.parse(text))
+        // let textfield = this.textfield
+        // let count = -1
+        // let change = () => {
+        // 	count++
+        // 	if (count >= textflowArr.length) {
+        // 		count = 0
+        // 	}
+        // 	let textFlow = textflowArr[count]
+        // 	// 切换描述内容
+        // 	// Switch to described content
+        // 	textfield.textFlow = textFlow
+        // 	let tw = egret.Tween.get(textfield)
+        // 	tw.to({ alpha: 1 }, 200)
+        // 	tw.wait(2000)
+        // 	tw.to({ alpha: 0 }, 200)
+        // 	tw.call(change, this)
+        // }
+        // change()
     };
     return Main;
 }(egret.DisplayObjectContainer));

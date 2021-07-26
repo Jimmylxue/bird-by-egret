@@ -31,7 +31,7 @@ class Main extends egret.DisplayObjectContainer {
 	private fnc = new Fnc()
 
 	public store = new Store()
-	private dispatcher: CustomDispatcher;
+	private dispatcher: CustomDispatcher
 
 	public constructor() {
 		super()
@@ -39,11 +39,8 @@ class Main extends egret.DisplayObjectContainer {
 	}
 
 	private onAddToStage(event: egret.Event) {
-		console.log('aaaaa')
 		egret.lifecycle.addLifecycleListener(context => {
-			// custom lifecycle plugin
-
-			context.onUpdate = () => { }
+			context.onUpdate = () => {}
 		})
 
 		egret.lifecycle.onPause = () => {
@@ -77,54 +74,40 @@ class Main extends egret.DisplayObjectContainer {
 			await RES.loadGroup('preload', 0, loadingView)
 			this.stage.removeChild(loadingView)
 		} catch (e) {
-			console.log('11')
 			console.error(e)
 		}
 	}
-
-	private textfield: egret.TextField
 
 	/**
 	 * 创建游戏场景
 	 * Create a game scene
 	 */
 	private createGameScene() {
-
-		this.dispatcher = new CustomDispatcher();
-		// let store = new Store()
-		// this.y = 0
+		this.dispatcher = new CustomDispatcher()
 		this.x = 0
 		this.y = 0
 		let sky = this.fnc.createBitmapByName('sky')
 		this.addChild(sky)
-		let bg = new Bg()
-		// bg.y =
+		let bg = new Bg(this.dispatcher)
 		this.addChild(bg)
 
 		let bird = new Bird(this.dispatcher)
 		this.addChild(bird)
 
-		console.log('cmnnnn')
-
 		sky.touchEnabled = true
-		sky.addEventListener(egret.TouchEvent.TOUCH_TAP, () => {
-			this.store.start()
-			this.dispatcher.birdLeap()
-		}, this)
-		// bg.init.call(this)
-		// const cloud = this.fnc.createBitmapByName('cloud')
-		// this.addChild(cloud)
-
-		// this.setChildIndex(sky, 9)
-
+		sky.addEventListener(
+			egret.TouchEvent.TOUCH_TAP,
+			() => {
+				this.store.start()
+				this.dispatcher.birdLeap()
+			},
+			this
+		)
 		/*
 				startTick（停止对应stopTick）全局函数将以 60 帧速率回调函数。
 				
 				如果是使用 egret.Timer()来做实时监控的，结果发现delay 参数不能低于16.6毫秒的
 		*/
-
-		// this.addEventListener(egret.TouchEvent.TOUCH_TAP, bird.leap, this)
-
 
 		egret.startTick(() => {
 			bird.move(this.store)
@@ -141,29 +124,5 @@ class Main extends egret.DisplayObjectContainer {
 	 * 描述文件加载成功，开始播放动画
 	 * Description file loading is successful, start to play the animation
 	 */
-	private startAnimation(result: string[]) {
-		// let parser = new egret.HtmlTextParser()
-
-		// let textflowArr = result.map(text => parser.parse(text))
-		// let textfield = this.textfield
-		// let count = -1
-		// let change = () => {
-		// 	count++
-		// 	if (count >= textflowArr.length) {
-		// 		count = 0
-		// 	}
-		// 	let textFlow = textflowArr[count]
-
-		// 	// 切换描述内容
-		// 	// Switch to described content
-		// 	textfield.textFlow = textFlow
-		// 	let tw = egret.Tween.get(textfield)
-		// 	tw.to({ alpha: 1 }, 200)
-		// 	tw.wait(2000)
-		// 	tw.to({ alpha: 0 }, 200)
-		// 	tw.call(change, this)
-		// }
-
-		// change()
-	}
+	private startAnimation(result: string[]) {}
 }

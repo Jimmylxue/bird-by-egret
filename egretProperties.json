@@ -27,5 +27,8 @@
     {
       "name": "promise"
     }
-  ]
+  ],
+  "vivo": {
+    "usePlugin": true
+  }
 }
